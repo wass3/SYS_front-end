@@ -24,106 +24,117 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     var kFirstDay = DateTime(2010, 10, 16);
     var kLastDay = DateTime(2030, 3, 14);
-    
+
     String formattedMonthYear = intl.DateFormat('MMMM y').format(_focusedDay);
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            padding: EdgeInsets.only(top: 45, left: 15),
-            color: Color(0xff050d09),
-            height: 80,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formattedMonthYear, // Mostrar mes y año dinámicamente
-                  style: TextStyle(color: Color(0xffddeee5), fontSize: 24),
-                ),
-                IconButton(
-                  icon: Icon(_calendarIcon, color: Color(0xffddeee5)),
-                  onPressed: () {
-                    // Aquí podrías abrir un menú desplegable si lo deseas, o simplemente cambiar el formato directamente
-                    _changeCalendarFormat(
-                      _calendarFormat == CalendarFormat.month
-                          ? CalendarFormat.week
-                          : CalendarFormat.month,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
+          Column(
+            children: [
+              Container(
+                padding: EdgeInsets.only(top: 45, left: 15),
                 color: Color(0xff050d09),
-                border: Border.all(color: Color(0xff050d09)),
-              ),
-              height: MediaQuery.of(context).size.height / 2,
-              
-              child: TableCalendar(
-                calendarStyle: CalendarStyle(
-                  tablePadding: EdgeInsets.fromLTRB( 5, 10, 5, 0),
-                  defaultTextStyle:TextStyle(color: Colors.blue),
-                  weekNumberTextStyle:TextStyle(color: Colors.red),
-                  weekendTextStyle:TextStyle(color: Colors.pink),
-                  
+                height: 80,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formattedMonthYear,
+                      style: TextStyle(color: Color(0xffddeee5), fontSize: 24),
+                    ),
+                    IconButton(
+                      icon: Icon(_calendarIcon, color: Color(0xffddeee5)),
+                      onPressed: () {
+                        _changeCalendarFormat(
+                          _calendarFormat == CalendarFormat.month
+                              ? CalendarFormat.week
+                              : CalendarFormat.month,
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                rowHeight: 60,
-                headerVisible: false,
-                startingDayOfWeek: StartingDayOfWeek.monday,
-                firstDay: kFirstDay,
-                lastDay: kLastDay,
-                focusedDay: _focusedDay,
-                calendarFormat: _calendarFormat,
-                selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  if (!isSameDay(_selectedDay, selectedDay)) {
-                    setState(() {
-                      _selectedDay = selectedDay;
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xff050d09),
+                    border: Border.all(color: Color(0xff050d09)),
+                  ),
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  child: TableCalendar(
+                    sixWeekMonthsEnforced: true, // Hacer que todos los meses tengan 6 semanas
+                    calendarStyle: CalendarStyle(
+                      tablePadding: EdgeInsets.fromLTRB(5, 10, 5, 0),
+                      defaultTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      weekendTextStyle: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      outsideTextStyle: TextStyle(color: Colors.grey),
+                    ),
+                    rowHeight: 53,
+                    headerVisible: false,
+                    startingDayOfWeek: StartingDayOfWeek.monday,
+                    firstDay: kFirstDay,
+                    lastDay: kLastDay,
+                    focusedDay: _focusedDay,
+                    calendarFormat: _calendarFormat,
+                    selectedDayPredicate: (day) {
+                      return isSameDay(_selectedDay, day);
+                    },
+                    onDaySelected: (selectedDay, focusedDay) {
+                      if (!isSameDay(_selectedDay, selectedDay)) {
+                        setState(() {
+                          _selectedDay = selectedDay;
+                          _focusedDay = focusedDay;
+                          _selectedDayPlans = _plansForSelectedDay(_selectedDay!);
+                        });
+                      }
+                    },
+                    onFormatChanged: (format) {
+                      if (_calendarFormat != format) {
+                        setState(() {
+                          _calendarFormat = format;
+                        });
+                      }
+                    },
+                    onPageChanged: (focusedDay) {
                       _focusedDay = focusedDay;
-                      _selectedDayPlans = _plansForSelectedDay(_selectedDay!);
-                    });
-                  }
-                },
-                onFormatChanged: (format) {
-                  if (_calendarFormat != format) {
-                    setState(() {
-                      _calendarFormat = format;
-                    });
-                  }
-                },
-                onPageChanged: (focusedDay) {
-                  _focusedDay = focusedDay;
-                },
+                    },
+                  ),
+                ),
               ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xff050d09),
+                    border: Border.all(color: Color(0xff050d09)),
+                  ),
+                  padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
+                  child: ListView(
+                    children: _selectedDayPlans.map((plan) => Container(
+                      color: Color(0xff050d09),
+                      child: plan,
+                    )).toList(),
+                  ),
+                ),
+              ),
+              const BottomNavBar(selectedIndex: 1),
+              Container(height: 26, color: Color(0xff050d09)),
+            ],
+          ),
+          Positioned(
+            bottom: 130,
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Color(0xff1b894f),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              onPressed: () {
+                // Añadir aquí la lógica para el botón flotante
+              },
+              child: Icon(Icons.add, color: Color(0xffddeee5)),
             ),
           ),
-          Container(
-            height: 2, 
-            width: double.infinity, 
-            decoration: BoxDecoration(
-              border: Border.all(color: Color(0xff050d09)),),),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Color(0xff050d09),
-                border: Border.all(color: Color(0xff050d09)),
-              ),
-              padding: EdgeInsets.fromLTRB( 5, 0, 5, 10),
-              child: ListView(
-                children: _selectedDayPlans.map((plan) => Container(
-                  color: Color(0xff050d09),
-                  child: plan,
-                )).toList(),
-              ),
-            ),
-          ),
-          const BottomNavBar(selectedIndex: 1),
-          Container(height: 26, color: Color(0xff050d09)),
         ],
       ),
     );
@@ -132,7 +143,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void _changeCalendarFormat(CalendarFormat format) {
     setState(() {
       _calendarFormat = format;
-      // Actualizar el icono basado en el formato seleccionado
       switch (format) {
         case CalendarFormat.month:
           _calendarIcon = Icons.view_module;
@@ -163,12 +173,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 35,
+              height: 35,
+              margin: EdgeInsets.only(left: 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
                 image: DecorationImage(
-                  image: AssetImage('assets/images/person_image.png'),
+                  image: AssetImage('assets/user_img.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -177,14 +188,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Padding(
                 padding: EdgeInsets.only(left: 10),
                 child: Text(
-                  'Plan ${i + 1}',
+                  'Plan $i',
                   style: TextStyle(color: Color(0xffddeee5)),
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(right: 20),
-              child: Icon(Icons.more_vert, color: Color(0xffddeee5)),
             ),
           ],
         ),
@@ -192,6 +199,4 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
     return plans;
   }
-
 }
-
