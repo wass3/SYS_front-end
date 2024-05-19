@@ -1,14 +1,16 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings, avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SysProvider {
-  static final _baseUrl = 'localhost:3000/api';
+  static const _baseUrl = '192.168.56.1:3000';
   static String apiKey = '';
 
 
-  static Future<List<dynamic>> getJsonData(String endpoint) async {
-    final url = Uri.https(_baseUrl, endpoint);
+  static Future<Map<String, dynamic>> getJsonData(String endpoint) async {
+    final url = Uri.http(_baseUrl, endpoint);
     final response = await http.get(url);
     if (response.statusCode == 200) {
       return json.decode(response.body);

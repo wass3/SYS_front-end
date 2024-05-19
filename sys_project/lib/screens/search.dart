@@ -1,12 +1,9 @@
 // ignore_for_file: prefer_const_constructors, library_private_types_in_public_api
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:sys_project/models/user.dart';
 import 'package:sys_project/service/user_service.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
-import 'package:http/http.dart' as http;
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -68,7 +65,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundImage: NetworkImage(
-                      _users[index].imageUrl,
+                      _users[index].userImg,
                     ),
                   ),
                   title: Text(
@@ -94,7 +91,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 Future<void> _fetchUsers() async {
   try {
+    print('Buscando usuarios...');
     List<User> users = await UserService.getUsers();
+    print('Usuarios encontrados: ${users.length}');
     setState(() {
       _users = users;
     });

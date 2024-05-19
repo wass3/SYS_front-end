@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:sys_project/models/user.dart';
 import 'package:sys_project/providers/sys_provider.dart';
 
 class UserService {
   static Future<List<User>> getUsers() async {
     try {
-      final response = await SysProvider.getJsonData('/users');
-      List<User> users = response.map<User>((data) => User.fromJson(data)).toList();
+      final response = await SysProvider.getJsonData('/api/user');
+      List<dynamic> usersJson = response['user'];
+      List<User> users = usersJson.map<User>((data) => User.fromJson(data)).toList();
       return users;
     } catch (e) {
       throw Exception('Failed to load users: $e');
@@ -19,7 +18,8 @@ class UserService {
     try {
       final response = await SysProvider.getJsonData('/users/$userId');
       
-      List<User> users = response.map<User>((data) => User.fromJson(data)).toList();
+      List<dynamic> usersJson = response['users'];
+      List<User> users = usersJson.map<User>((data) => User.fromJson(data)).toList();
       User user = users[0];
       return user;
     } catch (e) {
