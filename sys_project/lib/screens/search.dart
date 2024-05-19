@@ -1,10 +1,14 @@
 // ignore_for_file: prefer_const_constructors, library_private_types_in_public_api
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:sys_project/models/user.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
+import 'package:http/http.dart' as http;
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
   _SearchScreenState createState() => _SearchScreenState();
@@ -12,22 +16,12 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<String> _users = [
-    'Herman',
-    'Alice',
-    'Rosie',
-    'Charlie',
-    'Bob',
-    'Sarah',
-    'Sam',
-    'Jessica',
-    'Frank',
-    'Ted',
-  ];
+  List<User> _users = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchUsers();
     _searchController.addListener(_filterUsers);
   }
 
@@ -73,11 +67,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundImage: NetworkImage(
-                      'https://picsum.photos/250?image=$index',
+                      _users[index].imageUrl,
                     ),
                   ),
                   title: Text(
-                    _users[index],
+                    _users[index].name,
                     style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                   ),
                   trailing: ElevatedButton(
@@ -98,24 +92,26 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  Future<void> _fetchUsers() async {
+    final response = await http.get(Uri.parse('https://localhost:3000/api/users'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      setState(() {
+        _users = jsonResponse.map((data) => User.fromJson(data)).toList();
+      });
+    } else {
+      print('Error al obtener usuarios: ${response.statusCode}');
+    }
+  }
+
   void _filterUsers() {
     setState(() {
       if (_searchController.text.isEmpty) {
-        _users = [
-          'Herman',
-          'Alice',
-          'Rosie',
-          'Charlie',
-          'Bob',
-          'Sarah',
-          'Sam',
-          'Jessica',
-          'Frank',
-          'Ted',
-        ];
+        _fetchUsers();
       } else {
         _users.retainWhere((user) =>
-            user.toLowerCase().contains(_searchController.text.toLowerCase()));
+            user.name.toLowerCase().contains(_searchController.text.toLowerCase()));
       }
     });
   }
