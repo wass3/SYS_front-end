@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:sys_project/models/user.dart';
+import 'package:sys_project/service/user_service.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 import 'package:http/http.dart' as http;
 
@@ -91,19 +92,17 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
-  Future<void> _fetchUsers() async {
-    final response = await http.get(Uri.parse('https://localhost:3000/api/users'));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonResponse = jsonDecode(response.body);
-      setState(() {
-        _users = jsonResponse.map((data) => User.fromJson(data)).toList();
-      });
-    } else {
-      print('Error al obtener usuarios: ${response.statusCode}');
-    }
+Future<void> _fetchUsers() async {
+  try {
+    List<User> users = await UserService.getUsers();
+    setState(() {
+      _users = users;
+    });
+  } catch (e) {
+    print('Error al obtener usuarios: $e');
   }
+}
+
 
   void _filterUsers() {
     setState(() {
