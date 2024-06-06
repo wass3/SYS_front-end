@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sys_project/screens/profile.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 import 'package:sys_project/widgets/lista_planes.dart';
+import 'package:sys_project/widgets/plan_dialog.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -201,7 +202,15 @@ class HomePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
               ),
               onPressed: () {
-                // Añadir aquí la lógica para el botón flotante
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Añadir a un plan'),
+                      content: AddPlanDialog(),
+                    );
+                  },
+                );
               },
               child: Icon(Icons.add, color: const Color(0xffddeee5)),
             ),
