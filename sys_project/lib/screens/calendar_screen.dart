@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:sys_project/models/plan.dart';
+import 'package:sys_project/service/plan_service.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart' as intl;
@@ -99,12 +101,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
           selectedDayPredicate: (day) {
             return isSameDay(_selectedDay, day);
           },
-          onDaySelected: (selectedDay, focusedDay) {
+          onDaySelected: (selectedDay, focusedDay) async {
             if (!isSameDay(_selectedDay, selectedDay)) {
+              List<Widget> plans = await _plansForSelectedDay(selectedDay);
               setState(() {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
-                _selectedDayPlans = _plansForSelectedDay(_selectedDay!);
+                _selectedDayPlans = plans;
               });
             }
           },
@@ -131,15 +134,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
           border: Border.all(color: _primaryColor),
         ),
         padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: _selectedDayPlans.map((plan) {
-            return Container(
-              color: _primaryColor,
-              child: plan,
-            );
-          }).toList(),
-        ),
+        child: _selectedDayPlans.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.event_busy, color: _secondaryColor, size: 80),
+                    SizedBox(height: 10),
+                    Text(
+                      'No hay planes para este día',
+                      style: TextStyle(color: _secondaryColor, fontSize: 18),
+                    ),
+                  ],
+                ),
+              )
+            : ListView(
+                padding: EdgeInsets.zero,
+                children: _selectedDayPlans.map((plan) {
+                  return Container(
+                    color: _primaryColor,
+                    child: plan,
+                  );
+                }).toList(),
+              ),
       ),
     );
   }
@@ -170,10 +187,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
-  List<Widget> _plansForSelectedDay(DateTime selectedDay) {
-    List<Widget> plans = [];
-    for (int i = 0; i < 8; i++) {
-      plans.add(Container(
+  Future<List<Widget>> _plansForSelectedDay(DateTime selectedDay) async {
+    // Llama al método getPlans() del servicio PlanService para obtener los planes correspondientes al día seleccionado
+    List<Plan> plans = await PlanService.getPlans();
+    List<Plan> plansFiltered = plans
+        .where((plan) =>
+            plan.dayhour != null &&
+            plan.dayhour!.day == selectedDay.day &&
+            plan.dayhour!.month == selectedDay.month &&
+            plan.dayhour!.year == selectedDay.year)
+        .toList();
+
+    // Convierte cada plan en un Widget
+    List<Widget> planWidgets = plansFiltered.map((plan) {
+      return Container(
         margin: EdgeInsets.all(10),
         height: 50,
         decoration: BoxDecoration(
@@ -197,14 +224,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Padding(
               padding: EdgeInsets.only(left: 10),
               child: Text(
-                'Plan $i',
+                plan.title, // Mostrar el título del plan u otra información relevante
                 style: TextStyle(color: _secondaryColor),
               ),
             ),
           ],
         ),
-      ));
-    }
-    return plans;
+      );
+    }).toList();
+
+    return planWidgets;
   }
 }

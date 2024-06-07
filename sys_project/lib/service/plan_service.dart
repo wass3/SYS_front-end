@@ -18,6 +18,19 @@ class PlanService {
     }
   }
 
+  static Future<List<Plan>> getPlansForDay(DateTime date) async {
+    try {
+      final response = await SysProvider.getJsonData('/api/plan/day/${date.year}/${date.month}/${date.day}');
+      
+      List<dynamic> plansJson = response['plan'];
+      List<Plan> plans = plansJson.map<Plan>((data) => Plan.fromJson(data)).toList();
+      print('Plans: $plans');
+      return plans;
+    } catch (e) {
+      throw Exception('Failed to load plans for day: $e');
+    }
+  }
+
   static Future<Plan> getPlanById(int planId) async {
     try {
       final response = await SysProvider.getJsonData('/api/plan/$planId');
@@ -53,3 +66,4 @@ class PlanService {
     }
   }
 }
+

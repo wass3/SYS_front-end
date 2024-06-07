@@ -5,16 +5,38 @@ import 'package:sys_project/screens/profile.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 import 'package:sys_project/widgets/lista_planes.dart';
 import 'package:sys_project/widgets/plan_dialog.dart';
+import 'package:sys_project/models/plan.dart';
+import 'package:sys_project/service/plan_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<List<Plan>> _futurePlans;
+  String _filter = 'Hoy';
+
+  @override
+  void initState() {
+    super.initState();
+    _futurePlans = PlanService.getPlans();
+  }
+
+  void _applyFilter(String filter) {
+    setState(() {
+      _filter = filter;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Hoy',
+          _filter,
           style: TextStyle(color: const Color(0xffddeee5)),
         ),
         backgroundColor: const Color(0xff050d09),
@@ -28,9 +50,9 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.send),
             onPressed: () {
-              // Handle more icon pressed
+              print('futuro chat');
             },
           ),
         ],
@@ -73,21 +95,21 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for today's events
+                _applyFilter('Hoy');
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.calendar_view_day, color: Color(0xffddeee5)),
               title: const Text(
-                'Próximas 7 días',
+                'Próximos 7 días',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               onTap: () {
-                // Update UI for next 7 days' events
+                _applyFilter('Próximos 7 días');
                 Navigator.pop(context);
               },
             ),
@@ -101,7 +123,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for this month's events
+                _applyFilter('Este mes');
                 Navigator.pop(context);
               },
             ),
@@ -115,7 +137,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for activities
+                _applyFilter('Actividades preferidas');
                 Navigator.pop(context);
               },
             ),
@@ -129,7 +151,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for favorites
+                _applyFilter('Favoritos');
                 Navigator.pop(context);
               },
             ),
@@ -143,7 +165,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for activity type
+                _applyFilter('Tipo de actividad');
                 Navigator.pop(context);
               },
             ),
@@ -157,7 +179,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for location
+                _applyFilter('Ubicación');
                 Navigator.pop(context);
               },
             ),
@@ -171,7 +193,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                // Update UI for date
+                _applyFilter('Fecha');
                 Navigator.pop(context);
               },
             ),
@@ -185,7 +207,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: Container(
                   color: const Color(0xff050d09),
-                  child: LargeCardList(),
+                  child: LargeCardList(filter: _filter),
                 ),
               ),
               const BottomNavBar(selectedIndex: 0),
