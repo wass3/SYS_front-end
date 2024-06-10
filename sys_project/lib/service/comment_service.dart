@@ -14,6 +14,17 @@ class CommentService {
     }
   }
 
+  static Future<List<Comment>> getCommentsByPlanId(int planId) async {
+    try {
+      final response = await SysProvider.getJsonData('/api/comments/plan/$planId');
+      List<dynamic> commentsJson = response['comments'];
+      List<Comment> comments = commentsJson.map<Comment>((data) => Comment.fromJson(data)).toList();
+      return comments;
+    } catch (e) {
+      throw Exception('Failed to load comments by planId: $e');
+    }
+  }
+
   static Future<Comment> getCommentById(int commentId) async {
     try {
       final response = await SysProvider.getJsonData('/api/comments/$commentId');
@@ -49,3 +60,4 @@ class CommentService {
     }
   }
 }
+

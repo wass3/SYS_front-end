@@ -14,14 +14,17 @@ class UserPlanService {
     }
   }
 
-  static Future<UserPlan> getUserPlanById(int userId, int planId) async {
+  static Future<List<UserPlan>> getUsersByPlanId(int planId) async {
     try {
-      final response = await SysProvider.getJsonData('/api/user_plans/$userId/$planId');
-      return UserPlan.fromJson(response);
+      final response = await SysProvider.getJsonData('/api/user_plan/plan/$planId/users');
+      List<dynamic> userPlansJson = response['user_plans'];
+      List<UserPlan> userPlans = userPlansJson.map<UserPlan>((data) => UserPlan.fromJson(data)).toList();
+      return userPlans;
     } catch (e) {
-      throw Exception('Failed to load user plan: $e');
+      throw Exception('Failed to load user plans by planId: $e');
     }
   }
+
 
   static Future<UserPlan> createUserPlan(UserPlan newUserPlan) async {
     try {

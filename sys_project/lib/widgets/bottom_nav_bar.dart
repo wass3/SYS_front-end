@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:sys_project/screens/add_dispo_screen.dart';
 import 'package:sys_project/screens/calendar_screen.dart';
 import 'package:sys_project/screens/home_page.dart';
 import 'package:sys_project/screens/profile.dart';
 import 'package:sys_project/screens/search.dart';
+import 'package:sys_project/screens/show_pref_and_usrs.dart';
 
 
 class BottomNavBar extends StatefulWidget {
@@ -27,7 +29,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   bool isSunday() {
     // Get current day and check if it's Sunday (day number 7).
-    return DateTime.now().weekday == 5;
+    return DateTime.now().weekday == 1;
   }
 
   @override
@@ -85,7 +87,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                             onPressed: () {
                               setState(() {
                                 _selectedIndex = 3;
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => Profile()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => PrefAndDispoScreen()));
                               });
                             },
                           ),

@@ -1,27 +1,27 @@
 class Preferencia {
   final int id;
-  final int userId;
-  final int amigoId;
+  final int user_id;
+  final int amigo_id;
 
   Preferencia({
     required this.id,
-    required this.userId,
-    required this.amigoId,
+    required this.user_id,
+    required this.amigo_id,
   });
 
   factory Preferencia.fromJson(Map<String, dynamic> json) {
     return Preferencia(
       id: json['id'] as int,
-      userId: json['user_id'] as int,
-      amigoId: json['amigo_id'] as int,
+      user_id: json['user_id'] as int,
+      amigo_id: json['amigo_id'] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'user_id': userId,
-      'amigo_id': amigoId,
+      'user_id': user_id,
+      'amigo_id': amigo_id,
     };
   }
 }

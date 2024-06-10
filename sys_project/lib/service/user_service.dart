@@ -16,12 +16,8 @@ class UserService {
 
   static Future<User> getUserById(String userId) async {
     try {
-      final response = await SysProvider.getJsonData('/users/$userId');
-      
-      List<dynamic> usersJson = response['users'];
-      List<User> users = usersJson.map<User>((data) => User.fromJson(data)).toList();
-      User user = users[0];
-      return user;
+      final response = await SysProvider.getJsonData('/api/user/$userId');
+      return User.fromJson(response);
     } catch (e) {
       throw Exception('Failed to load user: $e');
     }

@@ -2,8 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:sys_project/models/plan.dart';
+import 'package:sys_project/models/user.dart';
+import 'package:sys_project/screens/plan_detail_screen.dart';
 import 'package:sys_project/service/plan_service.dart';
 import 'package:intl/intl.dart';
+import 'package:sys_project/service/user_plan_service.dart';
+import 'package:sys_project/service/user_service.dart';
 
 class LargeCardList extends StatefulWidget {
   final String filter;
@@ -95,7 +99,7 @@ class _LargeCardListState extends State<LargeCardList> {
 }
 
 
-class LargeCard extends StatelessWidget {
+class LargeCard extends StatefulWidget {
   final Plan plan;
   final bool isExpanded;
   final VoidCallback onToggleExpanded;
@@ -107,25 +111,40 @@ class LargeCard extends StatelessWidget {
     required this.onToggleExpanded,
   }) : super(key: key);
 
-  Color getStateColor(String state) {
-    switch (state) {
-      case 'CREATED':
-        return Colors.blue;
-      case 'IN_PROGRESS':
-        return Colors.orange;
-      case 'COMPLETED':
-        return Colors.green;
-      case 'CANCELLED':
-        return Colors.red;
-      default:
-        return Colors.grey;
+  @override
+  _LargeCardState createState() => _LargeCardState();
+}
+
+class _LargeCardState extends State<LargeCard> {
+  List<User> _users = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  void _loadUsers() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final userIds = await UserPlanService.getUsersByPlanId(widget.plan.planId);
+    for (final userId in userIds) {
+      final user = await UserService.getUserById('${userId.userId}');
+      setState(() {
+        _users.add(user);
+      });
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onToggleExpanded,
+      onTap: widget.onToggleExpanded,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -139,18 +158,18 @@ class LargeCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              plan.title,
+              widget.plan.title,
               style: TextStyle(color: Color.fromARGB(255, 195, 240, 217), fontSize: 18),
             ),
             const SizedBox(height: 8),
             Text(
-              plan.place,
+              widget.plan.place,
               style: TextStyle(color: const Color(0xff050d09)),
             ),
             const SizedBox(height: 8),
-            if (plan.dayhour != null) ...[
+            if (widget.plan.dayhour != null) ...[
               Text(
-                'Fecha y Hora: ${DateFormat('dd/MM/yyyy – kk:mm').format(plan.dayhour!)}',
+                'Fecha y Hora: ${DateFormat('dd/MM/yyyy – kk:mm').format(widget.plan.dayhour!)}',
                 style: TextStyle(color: Colors.white),
               ),
             ],
@@ -158,39 +177,75 @@ class LargeCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
               decoration: BoxDecoration(
-                color: getStateColor(plan.state),
+                color: Color.fromARGB(255, 195, 240, 217),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Text(
-                plan.state,
-                style: TextStyle(color: Colors.white),
+                widget.plan.state,
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
               ),
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeInOut,
               switchOutCurve: Curves.easeInOut,
-              child: isExpanded
+              child: widget.isExpanded
                   ? Column(
-                      key: ValueKey('expanded-${plan.title}'), // Clave única basada en el título del plan
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 16),
-                        Text(
-                          'Detalles adicionales del plan...',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            print('boton accion');
-                          },
-                          child: Text('Acción'),
+                        if (_isLoading)
+                          CircularProgressIndicator()
+                        else if (_users.isEmpty)
+                          Text(
+                            'No user handlers available',
+                            style: TextStyle(color: Colors.white),
+                          )
+                        else
+                          SizedBox(height: 16),
+                          for (final user in _users)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: NetworkImage('https://banner2.cleanpng.com/20180329/zue/kisspng-computer-icons-user-profile-person-5abd85306ff7f7.0592226715223698404586.jpg'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    user.userHandler,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlanDetailPage(plan: widget.plan),
+                                ),
+                              );
+                            },
+                            child: Text('Ver post'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(200,40),
+                            ),
+                          ),
                         ),
                       ],
                     )
-                  : SizedBox.shrink(
-                      key: ValueKey('collapsed-${plan.title}'), // Clave única basada en el título del plan
-                    ),
+                  : SizedBox.shrink(),
             ),
           ],
         ),
