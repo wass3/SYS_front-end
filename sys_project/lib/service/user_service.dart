@@ -48,4 +48,29 @@ class UserService {
       throw Exception('Failed to delete user: $e');
     }
   }
+
+  static Future<Map<String, dynamic>> login(String email, String password) async {
+  try {
+    final data = {'email_address': email, 'password': password};
+    print('data: $data');
+    final response = await SysProvider.postJsonData('/api/user/login', data);
+    print('response: $response');
+    final responseData = jsonDecode(response);
+    
+    if (responseData.containsKey('token')) {
+      // Si la respuesta contiene un token, devolver los datos del usuario y el token
+      return {
+        'userData': responseData,
+      };
+    } else {
+      // Si no contiene un token, lanzar una excepción
+      throw Exception('Token not found in response');
+    }
+  } catch (e) {
+    throw Exception('Failed to login: $e');
+  }
 }
+
+}
+
+

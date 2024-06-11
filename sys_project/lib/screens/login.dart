@@ -1,10 +1,22 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:sys_project/providers/user_data.dart';
 import 'package:sys_project/screens/home_page.dart';
 import 'package:sys_project/screens/register.dart';
+import 'package:sys_project/service/user_service.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
+  const Login({Key? key}) : super(key: key);
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,22 +40,30 @@ class Login extends StatelessWidget {
                     Text(
                       'Login',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: const Color(0xffddeee5),
+                      style: const TextStyle(
+                        color: Color(0xffddeee5),
                         fontSize: 24,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField('Username', false),
+                    _buildTextField('Username', false, _usernameController),
                     const SizedBox(height: 8),
-                    _buildTextField('Password', true),
+                    _buildTextField('Password', true, _passwordController),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                        );
+                      onPressed: () async {
+                        final username = _usernameController.text;
+                        final password = _passwordController.text;
+                        if (await _isValidCredentials(username, password)) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Invalid credentials')),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff97e2ba),
@@ -52,10 +72,10 @@ class Login extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20.0),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Login',
                         style: TextStyle(
-                          color: const Color(0xff050d09),
+                          color: Color(0xff050d09),
                           fontSize: 16,
                         ),
                       ),
@@ -68,9 +88,9 @@ class Login extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => Register()),
                         );
                       },
-                      child: Text(
+                      child: const Text(
                         'Don\'t have an account? Sign in',
-                        style: TextStyle(color: const Color(0xffffffff)),
+                        style: TextStyle(color: Color(0xffffffff)),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -84,21 +104,50 @@ class Login extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String labelText, bool obscureText) {
+  Widget _buildTextField(String labelText, bool obscureText, TextEditingController controller) {
     return TextField(
       obscureText: obscureText,
+      controller: controller,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: TextStyle(color: const Color(0xffddeee5)),
+        labelStyle: const TextStyle(color: Color(0xffddeee5)),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: const Color(0xff35e789), width: 2.0),
+          borderSide: BorderSide(color: Color(0xff35e789), width: 2.0),
           borderRadius: BorderRadius.circular(20.0),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: const Color(0xff333534), width: 1.0),
+          borderSide: BorderSide(color: Color(0xff333534), width: 1.0),
           borderRadius: BorderRadius.circular(20.0),
         ),
       ),
     );
   }
+
+  Future<bool> _isValidCredentials(String username, String password) async {
+  try {
+    final user = await UserService.login(username, password);
+    print('Login successful: $user');
+    if (user != null) {
+      print('llega ${user['userData']['token']}');
+      await UserPreferences.saveUser(
+        token: user['userData']['token'],
+        userId: user['userData']['user_id'],
+        userHandler: user['userData']['user_handler'],
+        name: user['userData']['name'],
+        surname: user['userData']['surname'],
+        biography: user['userData']['biography'],
+        emailAddress: user['userData']['email_address'],
+        userImg: user['userData']['user_img'],
+      );
+      print('guarda y devuelve true');
+      return true; // Devuelve true si el usuario es válido
+    } else {
+      return false; // Devuelve false si el usuario no es válido
+    }
+  } catch (e) {
+    print('Login failed: $e');
+    return false;
+  }
+}
+
 }

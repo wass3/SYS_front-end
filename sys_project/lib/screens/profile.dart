@@ -1,48 +1,54 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sys_project/screens/login.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 
 class Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.only(top: 44.0),
-              decoration: BoxDecoration(
-                color: Color(0xff050d09),
-                border: Border.all(color: Color(0xff050d09)),
-              ),
-              child: Column(
-                children: [
-                  _buildProfileHeader(),
-                  _buildStatsRow(),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.only( left: 24.0, right: 24.0),
-                      child: Column(
-                        children: [
-                          _buildSettingsList(),
-                          SizedBox(height: 24.0),
-                          _buildLogoutButton(),
-                        ],
-                      ),
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.only(top: 44.0),
+            decoration: BoxDecoration(
+              color: Color(0xff050d09),
+              border: Border.all(color: Color(0xff050d09)),
+            ),
+            child: Column(
+              children: [
+                _buildProfileHeader(),
+                _buildStatsRow(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.only( left: 24.0, right: 24.0),
+                    child: Column(
+                      children: [
+                        _buildSettingsList(),
+                        SizedBox(height: 24.0),
+                        _buildLogoutButton(context),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          const BottomNavBar(selectedIndex: 3),
-          Container(
-            height: 26,
-            color: Color(0xff050d09),
-          ),
-        ],
-      ),
+        ),
+        const BottomNavBar(selectedIndex: 3),
+        Container(
+          height: 26,
+          color: Color(0xff050d09),
+        ),
+      ],
     );
   }
 
@@ -168,10 +174,14 @@ class Profile extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        // Logout logic goes here
+      onPressed: () async {
+        await logout(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
       },
       style: ButtonStyle(
         minimumSize: MaterialStateProperty.all(Size(double.infinity, 50.0)),
@@ -191,4 +201,10 @@ class Profile extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
 }
+
