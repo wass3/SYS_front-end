@@ -1,8 +1,9 @@
-// ignore_for_file: library_private_types_in_public_api, prefer_const_constructors, avoid_print
+// ignore_for_file: library_private_types_in_public_api, prefer_const_constructors, avoid_print, sort_child_properties_last, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:sys_project/models/plan.dart';
 import 'package:sys_project/models/user.dart';
+import 'package:sys_project/models/user_plan.dart';
 import 'package:sys_project/screens/plan_detail_screen.dart';
 import 'package:sys_project/service/plan_service.dart';
 import 'package:intl/intl.dart';
@@ -98,7 +99,6 @@ class _LargeCardListState extends State<LargeCardList> {
   }
 }
 
-
 class LargeCard extends StatefulWidget {
   final Plan plan;
   final bool isExpanded;
@@ -141,6 +141,62 @@ class _LargeCardState extends State<LargeCard> {
     });
   }
 
+  Future<void> _inviteUsers() async {
+  final allUsers = await UserService.getUsers();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Invitar usuarios'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: allUsers.map((user) {
+              final bool alreadyInvited = _users.any((u) => u.userId == user.userId);
+              return ListTile(
+                leading: CircleAvatar(
+                  radius: 16,
+                  backgroundImage: NetworkImage(user.userImg),
+                ),
+                title: Text(
+                  user.name,
+                  style: TextStyle(fontSize: 14),
+                ),
+                trailing: ElevatedButton(
+                  onPressed: alreadyInvited
+                      ? null // No action if already invited
+                      : () async {
+                          UserPlan userPlan = UserPlan(planId: widget.plan.planId, userId: user.userId);
+                          await UserPlanService.createUserPlan(userPlan);
+                          setState(() {
+                            _users.add(user);
+                          });
+                          print('Invitado ${user.name}');
+                        },
+                  child: Text(
+                    alreadyInvited ? 'Invitado' : 'Invitar',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Cerrar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -157,9 +213,18 @@ class _LargeCardState extends State<LargeCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              widget.plan.title,
-              style: TextStyle(color: Color.fromARGB(255, 195, 240, 217), fontSize: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.plan.title,
+                  style: TextStyle(color: Color.fromARGB(255, 195, 240, 217), fontSize: 18),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add, color: Color(0xff35e789)),
+                  onPressed: _inviteUsers,
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(

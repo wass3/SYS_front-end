@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:sys_project/providers/user_data.dart';
@@ -16,6 +16,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -104,10 +105,11 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _buildTextField(String labelText, bool obscureText, TextEditingController controller) {
+  Widget _buildTextField(String labelText, bool isPasswordField, TextEditingController controller) {
     return TextField(
-      obscureText: obscureText,
+      obscureText: isPasswordField ? !_isPasswordVisible : false,
       controller: controller,
+      style: TextStyle(color: Color(0xffffffff)), // Establecer el color del texto a blanco
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Color(0xffddeee5)),
@@ -119,35 +121,47 @@ class _LoginState extends State<Login> {
           borderSide: BorderSide(color: Color(0xff333534), width: 1.0),
           borderRadius: BorderRadius.circular(20.0),
         ),
+        suffixIcon: isPasswordField
+            ? IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Color(0xffddeee5),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
 
   Future<bool> _isValidCredentials(String username, String password) async {
-  try {
-    final user = await UserService.login(username, password);
-    print('Login successful: $user');
-    if (user != null) {
-      print('llega ${user['userData']['token']}');
-      await UserPreferences.saveUser(
-        token: user['userData']['token'],
-        userId: user['userData']['user_id'],
-        userHandler: user['userData']['user_handler'],
-        name: user['userData']['name'],
-        surname: user['userData']['surname'],
-        biography: user['userData']['biography'],
-        emailAddress: user['userData']['email_address'],
-        userImg: user['userData']['user_img'],
-      );
-      print('guarda y devuelve true');
-      return true; // Devuelve true si el usuario es válido
-    } else {
-      return false; // Devuelve false si el usuario no es válido
+    try {
+      final user = await UserService.login(username, password);
+      print('Login successful: $user');
+      if (user != null) {
+        print('llega ${user['userData']['token']}');
+        await UserPreferences.saveUser(
+          token: user['userData']['token'],
+          userId: user['userData']['user_id'],
+          userHandler: user['userData']['user_handler'],
+          name: user['userData']['name'],
+          surname: user['userData']['surname'],
+          biography: user['userData']['biography'],
+          emailAddress: user['userData']['email_address'],
+          userImg: user['userData']['user_img'],
+        );
+        print('guarda y devuelve true');
+        return true; // Devuelve true si el usuario es válido
+      } else {
+        return false; // Devuelve false si el usuario no es válido
+      }
+    } catch (e) {
+      print('Login failed: $e');
+      return false;
     }
-  } catch (e) {
-    print('Login failed: $e');
-    return false;
   }
-}
-
 }

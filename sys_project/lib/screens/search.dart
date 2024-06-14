@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:sys_project/models/follower.dart';
 import 'package:sys_project/models/user.dart';
+import 'package:sys_project/service/follower_service.dart';
 import 'package:sys_project/service/user_service.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 
@@ -56,6 +58,7 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: Color(0xff050d09),
         automaticallyImplyLeading: false,
       ),
+      backgroundColor: Color(0xff1C1D1C), // Aquí estableces el color de fondo de la pantalla
       body: Column(
         children: [
           Expanded(
@@ -64,16 +67,16 @@ class _SearchScreenState extends State<SearchScreen> {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      _users[index].userImg,
-                    ),
+                    backgroundImage: AssetImage('assets/user_img.png')
                   ),
                   title: Text(
                     _users[index].name,
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                    style: TextStyle(color: Colors.white),
                   ),
                   trailing: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      //_followUser(_users[index].userId);
+                    },
                     child: Text('Seguir'),
                   ),
                 );
@@ -89,19 +92,20 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-Future<void> _fetchUsers() async {
-  try {
-    print('Buscando usuarios...');
-    List<User> users = await UserService.getUsers();
-    print('Usuarios encontrados: ${users.length}');
-    setState(() {
-      _users = users;
-    });
-  } catch (e) {
-    print('Error al obtener usuarios: $e');
-  }
-}
 
+  Future<void> _fetchUsers() async {
+    try {
+      print('Buscando usuarios...');
+      
+      List<User> users = await UserService.getUsers();
+      print('Usuarios encontrados: ${users.length}');
+      setState(() {
+        _users = users;
+      });
+    } catch (e) {
+      print('Error al obtener usuarios: $e');
+    }
+  }
 
   void _filterUsers() {
     setState(() {
@@ -113,5 +117,21 @@ Future<void> _fetchUsers() async {
       }
     });
   }
-}
 
+  void _followUser(int userId) async {
+    try {
+      
+      Follower createdFollower = await FollowerService.follow(userId, 11);
+      // Puedes manejar la respuesta si es necesario
+      print('Usuario seguido con éxito: ${createdFollower.followedId}');
+      setState(() {
+        
+        
+      });
+    } catch (e) {
+      print('Error al seguir al usuario: $e');
+      // Maneja el error según sea necesario
+    }
+  }
+
+}

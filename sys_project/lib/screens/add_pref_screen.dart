@@ -73,6 +73,7 @@ class _SearchScreenState extends State<SearchScreen> {
           },
         ),
       ),
+      backgroundColor: Color(0xff1C1D1C), 
       body: Column(
         children: [
           Expanded(

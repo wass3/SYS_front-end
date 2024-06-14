@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sys_project/models/plan.dart';
 import 'package:sys_project/service/plan_service.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
+import 'package:sys_project/widgets/plan_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -171,7 +172,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
           borderRadius: BorderRadius.circular(50),
         ),
         onPressed: () {
-          // Añadir aquí la lógica para el botón flotante
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Añadir a un plan'),
+                content: AddPlanDialog(),
+              );
+            },
+          );
         },
         child: Icon(Icons.add, color: _secondaryColor),
       ),

@@ -1,19 +1,46 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sys_project/providers/user_data.dart';
 import 'package:sys_project/screens/login.dart';
 import 'package:sys_project/widgets/bottom_nav_bar.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
+  @override
+  _ProfileState createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  late Future<Map<String, dynamic>?> userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    userFuture = UserPreferences.getUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildBody(context),
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: userFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('No user data found.'));
+          } else {
+            final userData = snapshot.data!;
+            return _buildBody(context, userData);
+          }
+        },
+      ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, Map<String, dynamic> userData) {
     return Column(
       children: [
         Expanded(
@@ -25,11 +52,11 @@ class Profile extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildProfileHeader(),
+                _buildProfileHeader(userData),
                 _buildStatsRow(),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.only( left: 24.0, right: 24.0),
+                    padding: EdgeInsets.only(left: 24.0, right: 24.0),
                     child: Column(
                       children: [
                         _buildSettingsList(),
@@ -52,7 +79,7 @@ class Profile extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(Map<String, dynamic> userData) {
     return Padding(
       padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0),
       child: Row(
@@ -60,7 +87,7 @@ class Profile extends StatelessWidget {
           CircleAvatar(
             radius: 40.0,
             backgroundColor: Color(0xff97e2ba),
-            child: Image.asset('assets/user_img.png'),
+            backgroundImage: AssetImage('assets/user_img.png'),
           ),
           SizedBox(width: 24.0),
           Expanded(
@@ -68,7 +95,7 @@ class Profile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '@username',
+                  '@${userData['userHandler']}',
                   style: TextStyle(
                     color: Color(0xffddeee5),
                     fontSize: 24.0,
@@ -77,7 +104,7 @@ class Profile extends StatelessWidget {
                 ),
                 SizedBox(height: 8.0),
                 Text(
-                  'Biography',
+                  userData['biography'] ?? 'Biography',
                   style: TextStyle(color: Color(0xffddeee5)),
                 ),
               ],
@@ -203,8 +230,6 @@ class Profile extends StatelessWidget {
   }
 
   Future<void> logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await UserPreferences.clearUser();
   }
 }
-

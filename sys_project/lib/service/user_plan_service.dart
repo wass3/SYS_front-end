@@ -14,6 +14,17 @@ class UserPlanService {
     }
   }
 
+  static Future<List<UserPlan>> getPlansByUserId(int userId) async {
+    try {
+      final response = await SysProvider.getJsonData('/api/user_plan/user/$userId/plans');
+      List<dynamic> userPlansJson = response['user_plans'];
+      List<UserPlan> userPlans = userPlansJson.map<UserPlan>((data) => UserPlan.fromJson(data)).toList();
+      return userPlans;
+    } catch (e) {
+      throw Exception('Failed to load user plans by planId: $e');
+    }
+  }
+
   static Future<List<UserPlan>> getUsersByPlanId(int planId) async {
     try {
       final response = await SysProvider.getJsonData('/api/user_plan/plan/$planId/users');
@@ -22,6 +33,15 @@ class UserPlanService {
       return userPlans;
     } catch (e) {
       throw Exception('Failed to load user plans by planId: $e');
+    }
+  }
+
+  static Future<int> countUserPlans(int userId) async {
+    try {
+      List<UserPlan> plans = await getPlansByUserId(userId);
+      return plans.length;
+    } catch (e) {
+      throw Exception('Failed to count user plans: $e');
     }
   }
 

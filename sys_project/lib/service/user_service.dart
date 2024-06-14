@@ -6,7 +6,8 @@ class UserService {
   static Future<List<User>> getUsers() async {
     try {
       final response = await SysProvider.getJsonData('/api/user');
-      List<dynamic> usersJson = response['user'];
+      print(response['users']);
+      List<dynamic> usersJson = response['users'];
       List<User> users = usersJson.map<User>((data) => User.fromJson(data)).toList();
       return users;
     } catch (e) {
