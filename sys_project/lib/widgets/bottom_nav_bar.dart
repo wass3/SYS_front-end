@@ -29,7 +29,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   bool isSunday() {
     // Get current day and check if it's Sunday (day number 7).
-    return DateTime.now().weekday == 7;
+    return DateTime.now().weekday == 5;
   }
 
   @override
